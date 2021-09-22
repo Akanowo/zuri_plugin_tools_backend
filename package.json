@@ -1,0 +1,28 @@
+{
+  "name": "zuri_plugin_tools_backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Akanowo/zuri_plugin_tools_backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Akanowo/zuri_plugin_tools_backend/issues"
+  },
+  "homepage": "https://github.com/Akanowo/zuri_plugin_tools_backend#readme",
+  "dependencies": {
+    "axios": "^0.21.4",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "joi": "^17.4.2",
+    "uuid": "^8.3.2"
+  }
+}

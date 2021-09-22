@@ -1,0 +1,7 @@
+#dependencies
+node_modules
+
+src/api/v1/_helpers/core_api_details.js
+
+#lock
+package-lock.json
