@@ -13,19 +13,24 @@ const authenticate = async (req, res, next) => {
   }
 
   const token = authorization.split(' ')[1];
+  console.log('TOKEN:', token);
   let response;
   try {
     const endpoint = '/auth/verify-token';
     const config = {
-      authorization: `Bearer ${token}`
+      headers: {
+        authorization: `Bearer ${token}`
+      }
     }
     response = await (await axios.get(`${BASE_URL}${endpoint}`, config)).data;
   } catch (error) {
+    console.log('Error occured while verifying token')
     return next(error);
   }
 
   if(response.status === 200) {
-    req.user = response.data.user
+    console.log('TOKEN VERIFY RESPONSE: ', response)
+    req.authorization = { user: response.data.user, token }
     next()
   }
 };

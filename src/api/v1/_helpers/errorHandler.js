@@ -3,7 +3,7 @@ const handler = (err, req, res, next) => {
   console.log(err.name);
 
   if(err.response) { // axios request error
-    console.log(err.reponse);
+    console.log(err.response.data);
     return res.status(422).json({
       status: false,
       message: err.response.data.message || err.reponse.message

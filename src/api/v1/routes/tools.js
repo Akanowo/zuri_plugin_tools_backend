@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const controller = require('../controllers/tools.controller');
+const toolsValidator = require('../validators/tools.validator');
 
 const routes = () => {
   const {
@@ -12,7 +13,7 @@ const routes = () => {
   router.get('/get', getTools);
   router.get('/get/:id', getSingleTool);
   router.post('/add', addTool);
-  router.post('/add/populate', addTools)
+  router.post('/add/populate', toolsValidator, addTools)
   
   return router;
 }

@@ -1,30 +1,31 @@
 const uuid = require('uuid');
 const { tools, userTools } = require('../_helpers/dummyData')
-const { BASE_URL, collection_name } = require('../_helpers/core_api_details');
+const { BASE_URL, collection_name, user_tools_collection } = require('../_helpers/core_api_details');
 const { default: axios } = require('axios');
 
 const toolsController = () => {
 
   const getTools = async (req, res, next) => {
-    const { user_id, organization_id } = req.query;
-    const { plugin } = req;
+    const { user_id } = req.query;
+    const { plugin, organization } = req;
+
+    console.log(plugin);
 
     // zuri core read api object
     const readObject = {
       plugin_id: plugin.id,
-      organization_id,
+      organization_id: organization._id,
       collection_name,
     }
 
     let tools = [];
 
     if (user_id) {
-      const usersTools = userTools.filter((x) => x.user_id === user_id);
-      return res.status(200).json({
-        status: true,
-        data: usersTools
-      })
+      readObject.collection_name = user_tools_collection;
+      readObject.filter = {user_id, plugin_id: plugin.id, organization_id: organization._id};
     }
+
+    console.log(readObject);
 
     try {
       const endpoint = '/data/read'
@@ -50,6 +51,16 @@ const toolsController = () => {
 
   const getSingleTool = (req, res) => {
     const { id } = req.params;
+    const { plugin, organization } = req;
+
+    console.log(plugin);
+
+    // zuri core read api object
+    const readObject = {
+      plugin_id: plugin.id,
+      organization_id: organization._id,
+      collection_name,
+    }
     const tool = tools.find((x) => x.id === id);
     if (!tool) {
       return res.status(404).json({
@@ -64,29 +75,37 @@ const toolsController = () => {
     })
   }
 
-  const addTool = (req, res) => {
+  const addTool = async (req, res) => {
+    const { plugin, organization } = req;
     const { user_id, tool_id } = req.body;
 
-    const tool = tools.find((x) => x.id === tool_id);
+    const readObject = {
+      plugin_id: plugin.id,
+      organization_id: organization._id,
+      collection_name,
+      filter: { _id: tool_id }
+    }
 
-    if (tool) {
-      const toolExists = userTools.find((x) => x.id === tool_id);
-      if(toolExists) {
-        return res.status(422).json({
-          status: false,
-          message: 'tool exists already'
-        })
-      }
+    // verify tool exists
+    let toolExists;
+    let endpoint = '/data/read'
+    try {
+      toolExists = await (await axios.post(`${BASE_URL}${endpoint}`), readObject).data
+    } catch (error) {
+      return next(error);
+    }
 
-      userTools.push({
+    console.log(toolExists);
+
+    if(toolExists.status === 200) {
+      endpoint = '/data/write';
+      readObject.collection_name = user_tools_collection;
+      readObject.filter = {};
+      readObject.payload = {
         user_id,
-        ...tool
-      })
-
-      return res.status(200).json({
-        status: true,
-        message: 'tool successfully added'
-      })
+        tool_id,
+        createdDate: new Date()
+      }
     }
 
     return res.status(404).json({
@@ -97,22 +116,23 @@ const toolsController = () => {
 
   const addTools = async (req, res, next) => {
     // post data to zuri core
-    const { plugin, user } = req;
+    const { plugin, user, organization } = req;
+
+    console.log(plugin)
+
+    console.log(organization, user);
 
     const endpoint = '/data/write';
     const postData = {
       plugin_id: plugin.id,
-      organization_id: req.body.organization_id,
+      organization_id: organization._id,
       collection_name,
-      bulk_write: true,
-      filter: {  },
-      payload: {
-        tool_id: uuid.v4(),
-        user_id: user.id,
-        organization_id: req.body.organization_id,
-        ...req.body
-      }
+      bulk_write: req.body.bulk_write,
+      filter: {},
+      payload: req.body.data
     }
+
+    console.log('POST_DATA: ',postData);
 
     let response;
     try {
